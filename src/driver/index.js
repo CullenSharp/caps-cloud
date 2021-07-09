@@ -2,7 +2,7 @@
 
 // 3rd party resources
 const Consumer = require('sqs-consumer');
-const uuid = require(uuid).v4;
+const uuid = require('uuid').v4;
 const Producer = require('sqs-producer');
 
 // reference to the vendor queue
@@ -21,20 +21,32 @@ function handleMessage(message) {
   console.log('body:', message.Body);
   let counter = 0;
 
-  setInterval( () => {
-    // send message to the vendor queue
-    const message = {
-      id: uuid(),
-      body: `this is message ${++counter}`,
-    };
+  message = {
+    id: uuid(),
+    body: `this is message ${++counter}`,
+  };
 
-    producer.send(message, function(error, message) {
-      if (error) { console.log(error); }
-      else{
-        console.log('sent', message);
-      }
-    });
-  }, 5000);
+  producer.send(message, function(error, message) {
+    if (error) { console.log(error); }
+    else{
+      console.log('sent', message);
+    }
+  });
+
+  // setInterval( () => {
+  //   // send message to the vendor queue
+  //   const message = {
+  //     id: uuid(),
+  //     body: `this is message ${++counter}`,
+  //   };
+
+  //   producer.send(message, function(error, message) {
+  //     if (error) { console.log(error); }
+  //     else{
+  //       console.log('sent', message);
+  //     }
+  //   });
+  // }, 5000);
 }
 
 app.on('error', (error) => {
