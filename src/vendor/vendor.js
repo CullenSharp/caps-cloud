@@ -3,6 +3,7 @@
 // 3rd party resources
 const AWS = require('aws-sdk');
 AWS.config.update({region: 'us-west-2'}); // ? wtf is this
+const uuid = require('uuid').v4;
 
 // setup
 const SNS = new AWS.SNS();
@@ -15,7 +16,8 @@ const payload = {
     "customers": "Jane Doe",
     "vendorId": 123
   }`,
-  TopicARN: topic
+  MessageGroupId: uuid(),
+  TopicArn: topic
 }
 
 SNS.publish(payload).promise()
