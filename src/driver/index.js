@@ -1,60 +1,23 @@
 'use strict';
 
 // 3rd party resources
-const Consumer = require('sqs-consumer');
-const uuid = require('uuid').v4;
-const Producer = require('sqs-producer');
+const { SQS } = require('@aws-sdk/client-sqs');
 
-// reference to the vendor queue
-const producer = Producer.create({
-  queueUrl: 'https://sqs.us-west-2.amazonaws.com/609247114401/vendor',
-  region: 'us-west-2',
-});
+const client = new SQS({ region: 'us-west-2' });
 
-// ? why
-const app = Consumer.create({
-  queueUrl: 'https://sqs.us-west-2.amazonaws.com/609247114401/packages.fifo',
-  handleMessage: handleMessage,
-});
-
-function handleMessage(message) {
-  console.log('body:', message.Body);
-  let counter = 0;
-
-  message = {
-    id: uuid(),
-    body: `this is message ${++counter}`,
+exports.handler = async function(event, context) {
+  const sendMessageCommandInput = {
+    DelaySeconds: 3,
+    QueueUrl: 'https://sqs.us-west-2.amazonaws.com/609247114401/vendor',
+    MessageBody: '',
   };
 
-  producer.send(message, function(error, message) {
-    if (error) { console.log(error); }
-    else{
-      console.log('sent', message);
-    }
+  event.Records.forEach(record => {
+    const { body } = record;
+    console.log('body', body);
+
+    sendMessageCommandInput.MessageBody = body;
+    client.sendMessage(sendMessageCommandInput);
   });
-
-  // setInterval( () => {
-  //   // send message to the vendor queue
-  //   const message = {
-  //     id: uuid(),
-  //     body: `this is message ${++counter}`,
-  //   };
-
-  //   producer.send(message, function(error, message) {
-  //     if (error) { console.log(error); }
-  //     else{
-  //       console.log('sent', message);
-  //     }
-  //   });
-  // }, 5000);
-}
-
-app.on('error', (error) => {
-  console.error(error);
-});
-
-app.on('processing_error', (error) => {
-  console.error(error);
-});
-
-app.start();
+  return {};
+};
